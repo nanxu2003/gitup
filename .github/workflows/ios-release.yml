@@ -93,7 +93,16 @@ jobs:
         run: |
           cd $WORKING_DIRECTORY
           git clone https://github.com/ZhangLi1984/itsm.git
-          ./itsm/bin/iTMSTransporter -assetFile $IPA_FILE_NAME -u $APPLE_USERNAME -p $APPLE_PASSWORD -m upload -asc_provider $APPLE_ASC_PROVIDER
+          if ./itsm/bin/iTMSTransporter -assetFile "$IPA_FILE_NAME" -u "$APPLE_USERNAME" -p "$APPLE_PASSWORD" -m upload -asc_provider "$APPLE_ASC_PROVIDER"; then
+            echo "Upload completed using iTMSTransporter."
+          else
+            echo "::warning::iTMSTransporter upload failed; retrying using xcrun altool."
+            xcrun altool --upload-app \
+              --type ios \
+              --file "$IPA_FILE_NAME" \
+              --username "$APPLE_USERNAME" \
+              --password "$APPLE_PASSWORD"
+          fi
 
       - name: Clean project and update README
         env:
